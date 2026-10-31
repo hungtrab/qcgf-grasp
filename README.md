@@ -94,8 +94,8 @@ python src/predict.py --image photo.jpg --text "Pick up the mug by its handle." 
   changes are listed at the top of each file.
 - `src/*.py`: data preparation, training, evaluation, summary, prediction.
 
-## Data and license
+## Data
 
-Grasp-Anything++ (MIT) is downloaded from the authors' Hugging Face repositories
-at pinned revisions (`configs/dataset_sources.json`); raw data are not
-redistributed. Code is MIT licensed.
+Grasp-Anything++ is downloaded from the authors' Hugging Face repositories at
+pinned revisions (`configs/dataset_sources.json`); raw data are not
+redistributed.
