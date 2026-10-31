@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Evaluate locked checkpoints; store every prediction for independent auditing."""
 
 import argparse

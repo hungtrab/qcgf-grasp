@@ -89,9 +89,9 @@ python src/predict.py --image photo.jpg --text "Pick up the mug by its handle." 
 - `src/qcgf/model.py`: decoder and all quality losses (`mse`, `bce`, `focal`, `qcgf`).
 - `src/qcgf/geometry.py`: target maps, decoding, success metric.
 - `src/qcgf/data.py`: manifest and cached features; distractors come from the same image.
-- `src/qcgf/grconvnet*.py`: GR-ConvNet + CLIP from the
+- `src/qcgf/grconvnet.py`: GR-ConvNet + CLIP from the
   [LGD repository](https://github.com/Fsoft-AIC/LGD) (MIT, commit `501904d`);
-  changes are listed at the top of each file.
+  changes are listed at the top of the file.
 - `src/*.py`: data preparation, training, evaluation, summary, prediction.
 
 ## Data

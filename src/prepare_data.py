@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Fetch an auditable subset of Grasp-Anything++ without downloading 65 GB of RGB.
 
 HTTP ranges are checked, ZIP CRCs verified, and upstream revisions recorded.
@@ -26,9 +25,8 @@ import numpy as np
 import requests
 import torch
 
-from qcgf.storage import sha256_file
 from qcgf.downloads import download_ranges
-from qcgf.storage import write_json
+from qcgf.storage import sha256_file, write_json
 
 _http_local = threading.local()
 _signed_urls = {}

@@ -6,8 +6,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from .storage import read_json, sha256_file
-from .storage import write_json
+from .storage import read_json, sha256_file, write_json
 
 
 def download_ranges(

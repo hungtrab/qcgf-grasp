@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Train on train, select the checkpoint on val, never read test predictions."""
 
 import argparse

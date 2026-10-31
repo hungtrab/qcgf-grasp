@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Cache frozen encoder features; resume only verified files from the same data."""
 
 import argparse

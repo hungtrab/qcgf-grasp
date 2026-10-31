@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Predict a grasp from an arbitrary RGB image and instruction, without labels."""
 
 import argparse

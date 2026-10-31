@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Results table and paired scene/seed bootstrap of QCGF against each control."""
 
 import argparse
@@ -52,7 +51,14 @@ def main():
     p.add_argument(
         "--methods",
         nargs="+",
-        default=["grconvnet_clip", "grconvnet_clip_trained_encoder", "mse", "bce", "focal", "qcgf"],
+        default=[
+            "grconvnet_clip",
+            "grconvnet_clip_trained_encoder",
+            "mse",
+            "bce",
+            "focal",
+            "qcgf",
+        ],
     )
     p.add_argument("--seeds", nargs="+", type=int, default=[7, 17, 27])
     p.add_argument("--treatment", default="qcgf")
@@ -89,7 +95,9 @@ def main():
             ]
         )
         low, high = paired_bootstrap(preds, args.treatment, m, args.seeds)
-        print(f"  vs {m:30s} {100 * delta:+5.1f}  [{100 * low:+5.1f}, {100 * high:+5.1f}]")
+        print(
+            f"  vs {m:30s} {100 * delta:+5.1f}  [{100 * low:+5.1f}, {100 * high:+5.1f}]"
+        )
 
 
 if __name__ == "__main__":

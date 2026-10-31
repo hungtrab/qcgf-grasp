@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
 """Train the LGD authors' GR-ConvNet + CLIP on our split, select on val, test once.
 
 External baseline for the post-hoc extension (see README). The
 network, loss, augmentation and post-processing follow the author code; see
-src/qcgf/grconvnet*.py for the vendored files and listed adaptations. Queries,
+src/qcgf/grconvnet.py for the vendored code and listed adaptations. Queries,
 splits, the frozen CLIP text embedding, the success metric, checkpoint selection
 and the instruction-swap probe are the ones used for every method in this repo.
 """
@@ -21,16 +20,17 @@ import torch
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 
-from qcgf.grconvnet_data import (
+from qcgf.data import read_manifest, validate_text_features
+from qcgf.geometry import success
+from qcgf.grconvnet import (
+    UPSTREAM_COMMIT,
+    GenerativeResnet,
     decode,
     draw_targets,
     preprocess,
     rotate90,
     zoom,
 )
-from qcgf.grconvnet import UPSTREAM_COMMIT, GenerativeResnet
-from qcgf.data import read_manifest, validate_text_features
-from qcgf.geometry import success
 from qcgf.storage import atomic_write, save_tensors, write_json
 
 METHOD = "grconvnet_clip"

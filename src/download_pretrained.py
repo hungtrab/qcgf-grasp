@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Download pinned CLIP weights and tokenizer, validating every completed file."""
 
 import argparse
@@ -6,11 +5,10 @@ import hashlib
 from pathlib import Path
 
 import requests
-from prepare_data import get_range
 
-from qcgf.storage import sha256_file
+from prepare_data import get_range
 from qcgf.downloads import download_ranges
-from qcgf.storage import atomic_write, write_json
+from qcgf.storage import atomic_write, sha256_file, write_json
 
 MODEL = "openai/clip-vit-base-patch32"
 REVISION = "3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268"
