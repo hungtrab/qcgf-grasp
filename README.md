@@ -54,8 +54,9 @@ For a GPU, install the CUDA build of `torch`/`torchvision` first (pytorch.org).
 
 ## Run
 
-All commands run from the repository root. Settings are in
-[configs/experiment.json](configs/experiment.json); script defaults match it.
+All commands run from the repository root. Script defaults are the reported
+settings (grasp fields: 30 epochs, batch 32, AdamW 1e-3, rank weight 0.2;
+GR-ConvNet: up to 50 epochs, patience 10, batch 8, Adam 1e-3).
 
 ```bash
 # 1. Data subset, CLIP weights, cached image/text features
