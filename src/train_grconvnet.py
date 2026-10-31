@@ -60,7 +60,6 @@ class QueryImages(Dataset):
 
 
 def swap_partners(rows):
-    """Same deterministic different-object instruction as src/evaluate.py."""
     by_scene, partner = {}, {}
     for i, row in enumerate(rows):
         by_scene.setdefault(row["scene_id"], []).append(i)

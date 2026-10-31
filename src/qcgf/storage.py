@@ -1,5 +1,3 @@
-"""Atomic file writes."""
-
 import json
 import os
 import tempfile

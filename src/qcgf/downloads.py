@@ -1,5 +1,3 @@
-"""Parallel HTTP-range download that resumes from finished chunks."""
-
 import os
 import shutil
 from concurrent.futures import ThreadPoolExecutor
@@ -7,7 +5,6 @@ from pathlib import Path
 
 
 def download_ranges(path, size, read_range, block_size=8 * 1024 * 1024, workers=16):
-    """Fill ``path`` with ``read_range(offset, length)``; a marker file per chunk."""
     path = Path(path)
     done = path.with_name(path.name + ".chunks")
     done.mkdir(parents=True, exist_ok=True)

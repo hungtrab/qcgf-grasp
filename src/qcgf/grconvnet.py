@@ -139,7 +139,6 @@ def wrap(angle):
 
 
 def rotate90(image, grasps, k):
-    """Rotate counterclockwise by k * 90 degrees, as np.rot90 on (H, W)."""
     grasps = np.asarray(grasps, np.float64).reshape(-1, 5).copy()
     size = image.shape[0]
     for _ in range(k % 4):
@@ -151,7 +150,6 @@ def rotate90(image, grasps, k):
 
 
 def zoom(image, grasps, factor):
-    """Keep the centre `factor` of the image (upstream Image.zoom semantics)."""
     size = image.shape[0]
     start = int(size * (1 - factor)) // 2
     image = image[start : size - start, start : size - start]
@@ -163,7 +161,6 @@ def zoom(image, grasps, factor):
 
 
 def preprocess(image, output_size=224):
-    """Resize, scale to [0, 1], subtract the scalar mean, return CHW float32."""
     image = resize(image, (output_size, output_size), preserve_range=True)
     image = image.astype(np.float32) / 255.0
     image -= image.mean()
@@ -171,7 +168,6 @@ def preprocess(image, output_size=224):
 
 
 def draw_targets(grasps, output_size=224, image_size=IMAGE_SIZE):
-    """Central-third rectangles, later grasps overwrite earlier ones (upstream draw)."""
     pos = np.zeros((output_size, output_size), np.float32)
     ang = np.zeros_like(pos)
     width = np.zeros_like(pos)
@@ -193,7 +189,6 @@ def draw_targets(grasps, output_size=224, image_size=IMAGE_SIZE):
 
 
 def decode(pos, cos, sin, width, topk=1, output_size=224, image_size=IMAGE_SIZE):
-    """Upstream post_process_output + detect_grasps, mapped back to 416 px."""
     q = gaussian(pos, 2.0, preserve_range=True)
     ang = gaussian(np.arctan2(sin, cos) / 2.0, 2.0, preserve_range=True)
     width = gaussian(width * (output_size / 2), 1.0, preserve_range=True)

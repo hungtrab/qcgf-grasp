@@ -16,8 +16,6 @@ class ConvBlock(nn.Sequential):
 
 
 class GraspField(nn.Module):
-    """Feature pyramid + coordinates + FiLM text conditioning -> five 56x56 maps."""
-
     def __init__(self, channels=64, text_dim=512, grid=56):
         super().__init__()
         self.grid = grid
@@ -56,7 +54,6 @@ class GraspField(nn.Module):
             fused, size=(self.grid, self.grid), mode="bilinear", align_corners=False
         )
         raw = self.head(self.refine(fused))
-        # Return unconstrained angle components; the cosine loss normalizes them.
         geom = torch.cat([raw[:, 1:3], F.softplus(raw[:, 3:5])], 1)
         return raw[:, 0], geom
 
@@ -70,7 +67,6 @@ def field_loss(
     method="qcgf",
     rank_weight=0.2,
 ):
-    """Quality loss (mse, bce, focal or qcgf) plus angle and size losses."""
     assert method in {"mse", "bce", "focal", "qcgf", "vision_only"}, method
     mask = quality[:, None]
     angle = F.normalize(geometry[:, :2], dim=1, eps=1e-6)
@@ -84,12 +80,10 @@ def field_loss(
     if method == "mse":
         quality_loss = F.mse_loss(logits.sigmoid(), quality)
     else:
-        # Average foreground and background separately.
         bce = F.binary_cross_entropy_with_logits(logits, quality, reduction="none")
         p = logits.sigmoid()
         focal = bce
         if method != "bce":
-            # "bce" keeps class balance but drops the focal modulation.
             focal = bce * (quality * (1 - p).square() + (1 - quality) * p.square())
         pos = (focal * quality).flatten(1).sum(1) / quality.flatten(1).sum(1).clamp_min(
             1

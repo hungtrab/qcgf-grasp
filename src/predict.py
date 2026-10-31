@@ -71,7 +71,6 @@ def main():
     a = visual.layer2(x)
     b = visual.layer3(a)
     c = visual.layer4(b)
-    # Match the feature cache's fp16 quantization, then train/infer head in fp32.
     features = [f.half().float() for f in [a, b, c]]
     text = F.normalize(encoder(**tokens).text_embeds, dim=-1).half().float()
     if ckpt["config"]["method"] == "vision_only":

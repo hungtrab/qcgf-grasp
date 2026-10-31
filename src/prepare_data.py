@@ -38,7 +38,6 @@ def primitive_load(data):
 
 
 def retry_delay(value):
-    """Retry-After permits either seconds or an HTTP-date."""
     try:
         return max(float(value), 1)
     except (TypeError, ValueError):
@@ -305,7 +304,6 @@ def main():
         r.raise_for_status()
         splits[key] = set(primitive_load(r.content))
     scene_sets = {key: {x[:64] for x in values} for key, values in splits.items()}
-    # A shared scene cannot be used in two evaluation groups or in training.
     shared_test = scene_sets["test_seen"] & scene_sets["test_unseen"]
     scene_sets["test_seen"] -= shared_test
     test_scenes = scene_sets["test_seen"] | scene_sets["test_unseen"]

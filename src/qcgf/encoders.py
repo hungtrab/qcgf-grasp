@@ -1,5 +1,3 @@
-"""Frozen CLIP ViT-B/32 text encoder at a pinned Hugging Face revision."""
-
 from transformers import CLIPTextModelWithProjection, CLIPTokenizer
 
 CLIP_MODEL = "openai/clip-vit-base-patch32"

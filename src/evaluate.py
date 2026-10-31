@@ -141,7 +141,6 @@ def main():
     if "test_seen" in scores and "test_unseen" in scores:
         a, b = scores["test_seen"]["success1"], scores["test_unseen"]["success1"]
         scores["harmonic_mean"] = 2 * a * b / (a + b) if a + b else 0
-    # Decoder-only latency on cached features.
     one = [f[:1] for f in features]
     txt = text[:1]
     for _ in range(10):

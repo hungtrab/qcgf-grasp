@@ -17,7 +17,6 @@ def load(runs, method, seed):
 
 
 def paired_bootstrap(preds, treatment, control, seeds, draws=5000, seed=2026):
-    """Delta H; resample seed pairs and scene clusters, seen/unseen stratified."""
     grouped = []
     for split in SPLITS:
         base = [r for r in preds[control, seeds[0]] if r["split"] == split]
