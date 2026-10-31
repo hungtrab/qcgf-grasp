@@ -42,27 +42,22 @@ For a GPU, install the CUDA build of `torch`/`torchvision` first (pytorch.org).
 All commands run from the repository root. Script defaults are the reported settings (grasp fields: 30 epochs, batch 32, AdamW 1e-3, rank weight 0.2; GR-ConvNet: up to 50 epochs, patience 10, batch 8, Adam 1e-3).
 
 ```bash
-# 1. Data subset and cached image/text features (CLIP downloads automatically)
 python src/prepare_data.py --train-scenes 1000 --val-scenes 120
 python src/cache_features.py
 
-# 2. Grasp fields: 4 quality losses x 3 seeds, then test
 for s in 7 17 27; do for m in mse bce focal qcgf; do
   python src/train.py --method $m --seed $s --out runs/${m}_seed$s
   python src/evaluate.py --checkpoint runs/${m}_seed$s/best.pt
 done; done
 
-# 3. GR-ConvNet + CLIP baseline (GPU recommended)
 for s in 7 17 27; do
   python src/train_grconvnet.py --seed $s --out runs/grconvnet_clip_seed$s
   python src/train_grconvnet.py --train-encoder --seed $s \
     --out runs/grconvnet_clip_trained_encoder_seed$s
 done
 
-# 4. Results table and paired bootstrap
 python src/summarize.py
 
-# Predict on any image
 python src/predict.py --image photo.jpg --text "Pick up the mug by its handle." \
   --checkpoint runs/qcgf_seed7/best.pt
 ```
