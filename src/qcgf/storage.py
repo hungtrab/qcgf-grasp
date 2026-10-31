@@ -1,6 +1,5 @@
-"""Write completed artifacts atomically so interrupted files are never reused."""
+"""Atomic file writes."""
 
-import hashlib
 import json
 import os
 import tempfile
@@ -42,15 +41,3 @@ def save_tensors(path: Path, value):
         temporary.replace(path)
     finally:
         temporary.unlink(missing_ok=True)
-
-
-def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with Path(path).open("rb") as stream:
-        for block in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
-
-
-def read_json(path: Path):
-    return json.loads(Path(path).read_text())

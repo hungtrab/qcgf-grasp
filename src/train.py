@@ -1,7 +1,6 @@
-"""Train on train, select the checkpoint on val, never read test predictions."""
+"""Train a grasp field and keep the checkpoint with the best validation top-1."""
 
 import argparse
-import hashlib
 import json
 import random
 import time
@@ -70,9 +69,6 @@ def main():
         )
     args.out.mkdir(parents=True, exist_ok=True)
     config = {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()}
-    config["manifest_sha256"] = hashlib.sha256(
-        (args.root / "manifest.jsonl").read_bytes()
-    ).hexdigest()
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -82,7 +78,6 @@ def main():
         torch.backends.cudnn.benchmark = False
         torch.backends.cudnn.deterministic = True
         torch.cuda.reset_peak_memory_stats()
-    # Initialization and shuffling use the same seeds in every paired method.
     model = GraspField(args.channels, grid=args.grid).to(args.device)
     train = CachedDataset(
         args.root, args.cache, "train", args.grid, args.method == "vision_only"

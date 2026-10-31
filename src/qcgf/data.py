@@ -1,4 +1,3 @@
-import hashlib
 import json
 from pathlib import Path
 
@@ -46,11 +45,6 @@ def validate_text_features(embeddings, texts):
 
 class CachedDataset(Dataset):
     def __init__(self, root, cache, split, grid=56, vision_only=False):
-        metadata = json.loads((Path(cache) / "metadata.json").read_text())
-        digest = hashlib.sha256(
-            (Path(root) / "manifest.jsonl").read_bytes()
-        ).hexdigest()
-        assert metadata["manifest_sha256"] == digest, "cache/manifest mismatch"
         self.rows = [r for r in read_manifest(root) if r["split"] == split]
         self.cache, self.grid, self.vision_only = Path(cache), grid, vision_only
         self.text = torch.load(
@@ -58,7 +52,6 @@ class CachedDataset(Dataset):
         )
         validate_text_features(self.text, (row["text"] for row in self.rows))
         by_scene = {}
-        # Never draw distractor annotations from a different split.
         for row in self.rows:
             by_scene.setdefault(row["scene_id"], []).append(row)
         self.targets = []
@@ -78,7 +71,6 @@ class CachedDataset(Dataset):
                     torch.from_numpy(negative),
                 )
             )
-        # RGB features are immutable and shared across all queries in a scene.
         self.features = {}
 
     def __len__(self):

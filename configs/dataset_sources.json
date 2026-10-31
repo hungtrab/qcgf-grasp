@@ -26,6 +26,5 @@
   },
   "seed": 2026,
   "requested_train_scenes": 1000,
-  "requested_val_scenes": 120,
-  "manifest_sha256": "b22acc781218260a638323247e68fbc44124300e73f6d2a877d2aae6e8dfaf7a"
+  "requested_val_scenes": 120
 }

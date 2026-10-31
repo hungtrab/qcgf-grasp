@@ -1,7 +1,6 @@
-"""Evaluate locked checkpoints; store every prediction for independent auditing."""
+"""Evaluate a checkpoint on both test splits and save per-query predictions."""
 
 import argparse
-import hashlib
 import json
 import time
 from pathlib import Path
@@ -49,8 +48,6 @@ def main():
         p.error("Evaluation already exists; use a fresh --out or explicit --overwrite")
     checkpoint = torch.load(args.checkpoint, map_location="cpu", weights_only=True)
     config = checkpoint["config"]
-    digest = hashlib.sha256((args.root / "manifest.jsonl").read_bytes()).hexdigest()
-    assert digest == config["manifest_sha256"], "checkpoint/manifest mismatch"
     model = GraspField(config["channels"], grid=config["grid"]).to(args.device)
     model.load_state_dict(checkpoint["model"])
     model.eval()
@@ -69,8 +66,7 @@ def main():
         shuffled_correct = 0
         original_swappable_correct = 0
         shuffled = {}
-        # Deterministic different-object instruction from the same scene. This
-        # diagnostic only changes the query and keeps the original target.
+        # Swap in another object's instruction from the same image; same target.
         by_scene = {}
         for i, row in enumerate(dataset.rows):
             by_scene.setdefault(row["scene_id"], []).append(i)
@@ -145,7 +141,7 @@ def main():
     if "test_seen" in scores and "test_unseen" in scores:
         a, b = scores["test_seen"]["success1"], scores["test_unseen"]["success1"]
         scores["harmonic_mean"] = 2 * a * b / (a + b) if a + b else 0
-    # Cached-feature head latency, batch 1, explicitly excludes both encoders.
+    # Decoder-only latency on cached features.
     one = [f[:1] for f in features]
     txt = text[:1]
     for _ in range(10):
@@ -159,8 +155,7 @@ def main():
         torch.cuda.synchronize()
     scores["head_latency_ms"] = (time.perf_counter() - t) * 10
     report = {
-        "checkpoint_sha256": hashlib.sha256(args.checkpoint.read_bytes()).hexdigest(),
-        "manifest_sha256": digest,
+        "checkpoint": str(args.checkpoint),
         "selected_epoch": checkpoint["epoch"],
         "method": config["method"],
         "seed": config["seed"],

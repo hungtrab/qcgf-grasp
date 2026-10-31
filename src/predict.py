@@ -1,4 +1,4 @@
-"""Predict a grasp from an arbitrary RGB image and instruction, without labels."""
+"""Predict a grasp for an RGB image and an instruction."""
 
 import argparse
 import json

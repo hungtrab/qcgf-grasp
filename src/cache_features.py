@@ -1,7 +1,6 @@
-"""Cache frozen encoder features; resume only verified files from the same data."""
+"""Cache frozen ResNet-18 image features and CLIP text embeddings."""
 
 import argparse
-import hashlib
 import json
 import pickle
 from importlib.metadata import version
@@ -39,7 +38,6 @@ CACHE_READ_ERRORS = (
 
 
 def prepare_cache(cache, identity, scenes, rebuild=False):
-    """Validate provenance before reusing files or invalidating completion."""
     cache = Path(cache)
     header, metadata = cache / "config.json", cache / "metadata.json"
     existing = header if header.exists() else metadata
@@ -51,8 +49,6 @@ def prepare_cache(cache, identity, scenes, rebuild=False):
             )
     elif not existing.exists() and any((cache / "image").glob("*.pt")) and not rebuild:
         raise ValueError("Unidentified image cache; use --rebuild to replace it")
-    # metadata.json certifies completion. An explicit rebuild removes old tensor
-    # files before writing the new identity, including if that rebuild is killed.
     metadata.unlink(missing_ok=True)
     if rebuild:
         for path in (cache / "image").glob("*.pt"):
@@ -156,9 +152,6 @@ def main(argv=None):
         "text_encoder": CLIP_MODEL,
         "text_revision": CLIP_REVISION,
         "normalization": "L2 normalized text",
-        "manifest_sha256": hashlib.sha256(
-            (args.root / "manifest.jsonl").read_bytes()
-        ).hexdigest(),
     }
     todo = prepare_cache(args.cache, identity, scenes, args.rebuild)
     text_cache = args.cache / "text.pt"

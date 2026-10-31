@@ -16,11 +16,7 @@ class ConvBlock(nn.Sequential):
 
 
 class GraspField(nn.Module):
-    """Identical architecture for baseline and QCGF: frozen ResNet18 + CLIP text.
-
-    Trainable feature pyramid, spatial coordinates, FiLM conditioning, and
-    dense q/cos(2theta)/sin(2theta)/width/height maps at 56 x 56.
-    """
+    """Feature pyramid + coordinates + FiLM text conditioning -> five 56x56 maps."""
 
     def __init__(self, channels=64, text_dim=512, grid=56):
         super().__init__()
@@ -74,16 +70,9 @@ def field_loss(
     method="qcgf",
     rank_weight=0.2,
 ):
-    """Quality and geometry losses for binary central-third grasp supports.
-
-    Focal foreground/background terms are normalized per example. Geometry is
-    averaged over all positive pixels in the minibatch. Ranking is averaged over
-    examples with a nonempty, nonoverlapping distractor support; it is zero when
-    none qualify. These normalization scopes match the measured experiment.
-    """
+    """Quality loss (mse, bce, focal or qcgf) plus angle and size losses."""
     assert method in {"mse", "bce", "focal", "qcgf", "vision_only"}, method
     mask = quality[:, None]
-    # Same positive-only geometry objective in every method.
     angle = F.normalize(geometry[:, :2], dim=1, eps=1e-6)
     angle_loss = (
         (1 - (angle * target_geometry[:, :2]).sum(1)) * quality
@@ -95,8 +84,7 @@ def field_loss(
     if method == "mse":
         quality_loss = F.mse_loss(logits.sigmoid(), quality)
     else:
-        # Average each class separately; neither scene clutter nor support area
-        # silently changes foreground weight.
+        # Average foreground and background separately.
         bce = F.binary_cross_entropy_with_logits(logits, quality, reduction="none")
         p = logits.sigmoid()
         focal = bce

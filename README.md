@@ -59,9 +59,8 @@ settings (grasp fields: 30 epochs, batch 32, AdamW 1e-3, rank weight 0.2;
 GR-ConvNet: up to 50 epochs, patience 10, batch 8, Adam 1e-3).
 
 ```bash
-# 1. Data subset, CLIP weights, cached image/text features
+# 1. Data subset and cached image/text features (CLIP downloads automatically)
 python src/prepare_data.py --train-scenes 1000 --val-scenes 120
-python src/download_pretrained.py
 python src/cache_features.py
 
 # 2. Grasp fields: 4 quality losses x 3 seeds, then test

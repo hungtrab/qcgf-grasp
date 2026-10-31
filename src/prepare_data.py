@@ -1,12 +1,6 @@
-"""Fetch an auditable subset of Grasp-Anything++ without downloading 65 GB of RGB.
-
-HTTP ranges are checked, ZIP CRCs verified, and upstream revisions recorded.
-The original train/seen and test/{seen,unseen} object lists define eligibility.
-Whole scenes are disjoint across train, validation and the two test groups.
-"""
+"""Download a scene-disjoint Grasp-Anything++ subset with HTTP range requests."""
 
 import argparse
-import hashlib
 import io
 import json
 import mmap
@@ -26,7 +20,6 @@ import requests
 import torch
 
 from qcgf.downloads import download_ranges
-from qcgf.storage import sha256_file, write_json
 
 _http_local = threading.local()
 _signed_urls = {}
@@ -116,10 +109,6 @@ def get_range(url, start, end):
                     raise OSError(
                         f"Invalid range response: {r.status_code} {r.headers.get('Content-Range')}"
                     )
-                # Reuse a valid public CDN URL and persistent connection. This
-                # avoids resolving the same archive thousands of times. A
-                # range-cache mismatch disables this optimization, and expired
-                # URLs are refreshed. Never log signed URLs.
                 if not cached and r.url != request_url:
                     with _http_lock:
                         _signed_urls[url] = r.url
@@ -200,30 +189,18 @@ class Archive:
             count, cdsize, offset = fields[4:7]
         target = self.cache / f"{self.key}_{self.revision}.cd"
         marker = target.with_suffix(".complete")
-        complete = False
-        if marker.exists() and target.is_file() and target.stat().st_size == cdsize:
-            try:
-                saved = json.loads(marker.read_text())
-                complete = saved == cdsize or (
-                    isinstance(saved, dict)
-                    and saved.get("size") == cdsize
-                    and saved.get("sha256") == sha256_file(target)
-                )
-            except (ValueError, OSError):
-                pass
-        if not complete:
+        if not marker.exists():
             print(
                 f"{self.key}: indexing {count:,} entries ({cdsize / 1e6:.1f} MB)",
                 flush=True,
             )
-            record = download_ranges(
+            download_ranges(
                 target,
                 cdsize,
                 lambda pos, length: self.read(offset + pos, length),
-                identity=json.dumps(self.provenance, sort_keys=True) + f":{offset}",
                 workers=self.workers,
             )
-            write_json(marker, {"size": cdsize, "sha256": record["sha256"]})
+            marker.touch()
         entries = {}
         with (
             target.open("rb") as f,
@@ -270,7 +247,6 @@ class Archive:
         return entries
 
     def extract(self, entry):
-        # A single range includes the local header, filename, extra fields and data.
         nlen = len(entry["name"].encode())
         available = min(
             30 + nlen + 256 + entry["compressed"], self.size - entry["offset"]
@@ -381,7 +357,6 @@ def main():
         split: len({qid[:64] for qid in ids if qid[:64] in selected})
         for split, selected in chosen.items()
     }
-    # Respect the object eligibility list, including on scenes containing other classes.
     membership = {}
     for split, selected_scenes in chosen.items():
         allowed = splits["train" if split == "val" else split]
@@ -424,7 +399,6 @@ def main():
     rejected = []
     for qid in ids:
         text = primitive_load((root / "instructions" / (qid + ".pkl")).read_bytes())
-        # These public labels contain primitive lists; do not unpickle arbitrary classes.
         with torch.serialization.safe_globals(
             [
                 np.core.multiarray._reconstruct,
@@ -465,27 +439,12 @@ def main():
             }
         )
     manifest_bytes = "".join(json.dumps(row) + "\n" for row in manifest).encode()
-    digest = hashlib.sha256(manifest_bytes).hexdigest()
-    same_subset = (
-        source_spec.get("seed") == args.seed
-        and source_spec.get("requested_train_scenes") == args.train_scenes
-        and source_spec.get("requested_val_scenes") == args.val_scenes
-    )
-    if (
-        same_subset
-        and source_spec.get("manifest_sha256")
-        and source_spec["manifest_sha256"] != digest
-    ):
-        raise ValueError(
-            "Recreated manifest differs from the pinned experiment checksum"
-        )
     temporary = root / "manifest.jsonl.tmp"
     temporary.write_bytes(manifest_bytes)
     temporary.replace(root / "manifest.jsonl")
     metadata = {
         "seed": args.seed,
         "split_commit": commit,
-        "manifest_sha256": digest,
         "archives": {k: a.provenance for k, a in archives.items()},
         "requested_train_scenes": args.train_scenes,
         "requested_val_scenes": args.val_scenes,

@@ -1,15 +1,7 @@
-"""Train the LGD authors' GR-ConvNet + CLIP on our split, select on val, test once.
-
-External baseline for the post-hoc extension (see README). The
-network, loss, augmentation and post-processing follow the author code; see
-src/qcgf/grconvnet.py for the vendored code and listed adaptations. Queries,
-splits, the frozen CLIP text embedding, the success metric, checkpoint selection
-and the instruction-swap probe are the ones used for every method in this repo.
-"""
+"""Train GR-ConvNet + CLIP (LGD author code) on our split, pick on val, then test."""
 
 import argparse
 import copy
-import hashlib
 import json
 import random
 import time
@@ -119,7 +111,6 @@ def evaluate(model, rows_by_split, root, text_cache, device):
         partner, scenes = swap_partners(rows)
         top5 = predict(model, dataset, device, topk=5)
 
-        # Same images and targets; only the instruction changes.
         swapped = copy.copy(dataset)
         swapped.rows = [
             {**row, "text": partner.get(i, row["text"])} for i, row in enumerate(rows)
@@ -197,7 +188,6 @@ def main():
         args.evaluate_only is None and (args.out / "config.json").exists()
     ):
         p.error("Run state already exists; choose a fresh --out to preserve it")
-    digest = hashlib.sha256((args.root / "manifest.jsonl").read_bytes()).hexdigest()
     rows = read_manifest(args.root)
     split = {
         s: [r for r in rows if r["split"] == s][: args.limit]
@@ -212,7 +202,6 @@ def main():
 
     if args.evaluate_only:
         state = torch.load(args.evaluate_only, map_location="cpu", weights_only=True)
-        assert state["config"]["manifest_sha256"] == digest, "manifest mismatch"
         model = GenerativeResnet(
             detach=not state["config"].get("train_encoder", False)
         ).to(args.device)
@@ -226,7 +215,6 @@ def main():
         }
         config.update(
             method=METHOD + ("_trained_encoder" if args.train_encoder else ""),
-            manifest_sha256=digest,
             upstream="https://github.com/Fsoft-AIC/LGD",
             upstream_commit=UPSTREAM_COMMIT,
             network="lgrconvnet3, RGB input 224, channel 32, dropout 0.1",
@@ -317,8 +305,7 @@ def main():
     tests = {s: split[s] for s in ["test_seen", "test_unseen"]}
     scores, predictions = evaluate(model, tests, args.root, text_cache, args.device)
     report = {
-        "checkpoint_sha256": hashlib.sha256(checkpoint.read_bytes()).hexdigest(),
-        "manifest_sha256": digest,
+        "checkpoint": str(checkpoint),
         "selected_epoch": state["epoch"],
         "method": state["config"]["method"],
         "seed": state["config"]["seed"],

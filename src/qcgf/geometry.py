@@ -25,7 +25,7 @@ def rotated_iou(a, b):
 
 
 def success(prediction, ground_truth, iou_threshold=0.25, angle_threshold=np.pi / 6):
-    """Both conditions must hold for the SAME target grasp; strict paper thresholds."""
+    """IoU and angle thresholds must hold for the same ground-truth grasp."""
     return any(
         angular_error(prediction[4], g[4]) < angle_threshold
         and rotated_iou(prediction, g) > iou_threshold
@@ -34,11 +34,7 @@ def success(prediction, ground_truth, iou_threshold=0.25, angle_threshold=np.pi 
 
 
 def make_targets(grasps, grid=56, image_size=416):
-    """Central-third grasp support; at overlaps keep the nearest grasp center.
-
-    Quality uses all valid grasp rectangles. Regression is supervised only on
-    positive support, avoiding the ambiguous orientation of the background.
-    """
+    """Quality = central third of each grasp; geometry from the nearest grasp."""
     grasps = np.asarray(grasps, np.float32).reshape(-1, 5).copy()
     grasps[:, :4] *= grid / image_size
     yy, xx = np.mgrid[:grid, :grid].astype(np.float32)
@@ -66,7 +62,7 @@ def make_targets(grasps, grid=56, image_size=416):
 
 
 def decode(quality, geometry, image_size=416, topk=1):
-    """No target annotation is used. Select local quality maxima and decode size."""
+    """Decode the top-k local quality maxima into grasps."""
     from scipy.ndimage import gaussian_filter, maximum_filter
 
     quality = gaussian_filter(np.asarray(quality), 0.7)
