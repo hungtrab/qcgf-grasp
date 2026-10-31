@@ -1,0 +1,31 @@
+{
+  "split_commit": "501904dc5c30c8fad58d90f7e4f49b4095f11eb0",
+  "archives": {
+    "instructions": {
+      "repository": "airvlab/Grasp-Anything-pp",
+      "revision": "9b30c841d4f04e4a62e9f7abb3b503337a6200a7",
+      "files": [
+        "grasp_instructions.zip"
+      ]
+    },
+    "positive": {
+      "repository": "airvlab/Grasp-Anything-pp",
+      "revision": "9b30c841d4f04e4a62e9f7abb3b503337a6200a7",
+      "files": [
+        "grasp_label_positive.zip"
+      ]
+    },
+    "images": {
+      "repository": "airvlab/Grasp-Anything",
+      "revision": "6b4917455d0910c23f936a6c7a968418ba518897",
+      "files": [
+        "image_part_aa",
+        "image_part_ab"
+      ]
+    }
+  },
+  "seed": 2026,
+  "requested_train_scenes": 1000,
+  "requested_val_scenes": 120,
+  "manifest_sha256": "b22acc781218260a638323247e68fbc44124300e73f6d2a877d2aae6e8dfaf7a"
+}

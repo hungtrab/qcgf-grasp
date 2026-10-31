@@ -1,0 +1,25 @@
+{
+  "data": {"seed": 2026, "train_scenes": 1000, "val_scenes": 120},
+  "seeds": [7, 17, 27],
+  "grasp_field": {
+    "methods": ["mse", "bce", "focal", "qcgf"],
+    "channels": 32,
+    "grid": 56,
+    "epochs": 30,
+    "batch_size": 32,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "rank_weight": 0.2,
+    "val_every": 2
+  },
+  "grconvnet_clip": {
+    "variants": ["author code (encoder detached)", "--train-encoder"],
+    "epochs": 50,
+    "patience": 10,
+    "batch_size": 8,
+    "lr": 0.001
+  },
+  "checkpoint_selection": "highest validation top-1 success, earliest on ties",
+  "metric": "top-1: same GT rectangle with IoU > 0.25 and angle error < 30 degrees; H = harmonic mean of seen/unseen",
+  "note": "The bce/focal/GR-ConvNet controls were added after the first MSE/QCGF test results had been seen. Every run is reported."
+}

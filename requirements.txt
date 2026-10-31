@@ -1,0 +1,14 @@
+# Tested with Python 3.10. For a GPU, install the CUDA build of torch first
+# (https://pytorch.org); the original GPU runs used CUDA 12.8 wheels.
+torch==2.10.0
+torchvision==0.25.0
+numpy==2.2.6
+scipy==1.15.3
+opencv-python==4.11.0.86
+Pillow==10.4.0
+scikit-image==0.25.2
+transformers==4.57.1
+huggingface-hub==0.36.2
+tokenizers==0.22.2
+requests==2.34.2
+matplotlib==3.10.6
